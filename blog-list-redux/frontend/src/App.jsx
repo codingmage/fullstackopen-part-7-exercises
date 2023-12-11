@@ -1,18 +1,18 @@
-import { useState, useEffect, useRef } from 'react'
-import Blog from './components/Blog'
-import blogService from './services/blogs'
-import loginService from './services/login'
-import Notification from './components/Notification'
-import './index.css'
-import Togglable from './components/Togglable'
-import BlogForm from './components/BlogForm'
-import { useDispatch } from 'react-redux'
-import { setNotification } from './reducers/notificationReducer'
+import { useState, useEffect, useRef } from "react"
+import Blog from "./components/Blog"
+import blogService from "./services/blogs"
+import loginService from "./services/login"
+import Notification from "./components/Notification"
+import "./index.css"
+import Togglable from "./components/Togglable"
+import BlogForm from "./components/BlogForm"
+import { useDispatch } from "react-redux"
+import { setNotification } from "./reducers/notificationReducer"
 
 const App = () => {
     const [blogs, setBlogs] = useState([])
-    const [username, setUsername] = useState('')
-    const [password, setPassword] = useState('')
+    const [username, setUsername] = useState("")
+    const [password, setPassword] = useState("")
     const [user, setUser] = useState(null)
 
     const dispatch = useDispatch()
@@ -25,7 +25,7 @@ const App = () => {
     }, [])
 
     useEffect(() => {
-        const userIsLoggedInJSON = window.localStorage.getItem('loggedInUser')
+        const userIsLoggedInJSON = window.localStorage.getItem("loggedInUser")
         if (userIsLoggedInJSON) {
             const user = JSON.parse(userIsLoggedInJSON)
             setUser(user)
@@ -50,19 +50,23 @@ const App = () => {
             })
             blogService.setToken(user.token)
             setUser(user)
-            setUsername('')
-            setPassword('')
-            window.localStorage.setItem('loggedInUser', JSON.stringify(user))
+            setUsername("")
+            setPassword("")
+            dispatch(
+                setNotification({
+                    content: `logged in as ${user.username}`,
+                    kind: "info",
+                })
+            )
+            window.localStorage.setItem("loggedInUser", JSON.stringify(user))
         } catch (error) {
             console.log(error)
-            setNotificationMessage({
-                ...notificationMessage,
-                type: 'error',
-                text: 'wrong username or password',
-            })
-            setTimeout(() => {
-                setNotificationMessage('')
-            }, 5000)
+            dispatch(
+                setNotification({
+                    content: `unable to login. wrong username or password`,
+                    kind: "error",
+                })
+            )
         }
     }
 
@@ -75,7 +79,7 @@ const App = () => {
             dispatch(
                 setNotification({
                     content: `new blog ${responseBlog.title} added`,
-                    kind: 'info',
+                    kind: "info",
                 })
             )
         } catch (error) {
@@ -83,7 +87,7 @@ const App = () => {
             dispatch(
                 setNotification({
                     content: `could not add blog. ${error.response.data.error}`,
-                    kind: 'error',
+                    kind: "error",
                 })
             )
         }
@@ -92,12 +96,18 @@ const App = () => {
     const updateLikes = async (id, blog) => {
         try {
             await blogService.updateBlog(id, blog)
+            dispatch(
+                setNotification({
+                    content: `voted for blog ${blog.title}`,
+                    kind: "info",
+                })
+            )
         } catch (error) {
             console.log(error)
             dispatch(
                 setNotification({
                     content: `could not update likes. ${error.response.data.error}`,
-                    kind: 'error',
+                    kind: "error",
                 })
             )
         }
@@ -114,14 +124,14 @@ const App = () => {
                 dispatch(
                     setNotification({
                         content: `blog ${name} deleted`,
-                        kind: 'info',
+                        kind: "info",
                     })
                 )
             } catch (error) {
                 dispatch(
                     setNotification({
                         content: `could not delete blog. ${error.response.data.error}`,
-                        kind: 'error',
+                        kind: "error",
                     })
                 )
             }
