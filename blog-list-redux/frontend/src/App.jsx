@@ -6,20 +6,17 @@ import Notification from './components/Notification'
 import './index.css'
 import Togglable from './components/Togglable'
 import BlogForm from './components/BlogForm'
+import { useDispatch } from 'react-redux'
+import { setNotification } from './reducers/notificationReducer'
 
 const App = () => {
     const [blogs, setBlogs] = useState([])
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
     const [user, setUser] = useState(null)
-    const [notificationMessage, setNotificationMessage] = useState({
-        type: '',
-        text: '',
-    })
-    /* 	const [blogName, setBlogName] = useState("")
-	const [blogAuthor, setBlogAuthor] = useState("")
-	const [blogURL, setBlogURL] = useState("")
- */
+
+    const dispatch = useDispatch()
+
     useEffect(() => {
         blogService.getAll().then((blogs) => {
             const sortedBlogs = blogs.sort((a, b) => b.likes - a.likes)
@@ -51,7 +48,6 @@ const App = () => {
                 username,
                 password,
             })
-            /*       console.log(user) */
             blogService.setToken(user.token)
             setUser(user)
             setUsername('')
@@ -71,39 +67,25 @@ const App = () => {
     }
 
     const handleNewBlog = async (newBlog) => {
-        /* 		event.preventDefault()
-
-		const newBlog = {
-			title: blogName,
-			author: blogAuthor,
-			url: blogURL
-		} */
         try {
             const responseBlog = await blogService.createBlog(newBlog)
             console.log(responseBlog)
             setBlogs([...blogs, { ...responseBlog, user: user }])
             blogFormRef.current.toggleVisibility()
-            /* 			setBlogName("")
-			setBlogAuthor("")
-			setBlogURL("") */
-            setNotificationMessage({
-                ...notificationMessage,
-                type: 'info',
-                text: `new blog ${responseBlog.title} added`,
-            })
-            setTimeout(() => {
-                setNotificationMessage('')
-            }, 5000)
+            dispatch(
+                setNotification({
+                    content: `new blog ${responseBlog.title} added`,
+                    kind: 'info',
+                })
+            )
         } catch (error) {
             console.log(error)
-            setNotificationMessage({
-                ...notificationMessage,
-                type: 'error',
-                text: `could not add blog. ${error.response.data.error}`,
-            })
-            setTimeout(() => {
-                setNotificationMessage('')
-            }, 5000)
+            dispatch(
+                setNotification({
+                    content: `could not add blog. ${error.response.data.error}`,
+                    kind: 'error',
+                })
+            )
         }
     }
 
@@ -112,14 +94,12 @@ const App = () => {
             await blogService.updateBlog(id, blog)
         } catch (error) {
             console.log(error)
-            setNotificationMessage({
-                ...notificationMessage,
-                type: 'error',
-                text: `could not update likes. ${error.response.data.error}`,
-            })
-            setTimeout(() => {
-                setNotificationMessage('')
-            }, 5000)
+            dispatch(
+                setNotification({
+                    content: `could not update likes. ${error.response.data.error}`,
+                    kind: 'error',
+                })
+            )
         }
     }
 
@@ -131,20 +111,19 @@ const App = () => {
                     (blog) => blog.id !== id
                 )
                 setBlogs(blogsWithoutDeleted)
-                setNotificationMessage({
-                    ...notificationMessage,
-                    type: 'info',
-                    text: 'blog ${name} deleted',
-                })
+                dispatch(
+                    setNotification({
+                        content: `blog ${name} deleted`,
+                        kind: 'info',
+                    })
+                )
             } catch (error) {
-                setNotificationMessage({
-                    ...notificationMessage,
-                    type: 'error',
-                    text: `could not delete blog. ${error.response.data.error}`,
-                })
-                setTimeout(() => {
-                    setNotificationMessage('')
-                }, 5000)
+                dispatch(
+                    setNotification({
+                        content: `could not delete blog. ${error.response.data.error}`,
+                        kind: 'error',
+                    })
+                )
             }
         }
     }
@@ -159,10 +138,7 @@ const App = () => {
             <div>
                 <h2>Log in to application</h2>
 
-                <Notification
-                    message={notificationMessage.text}
-                    type={notificationMessage.type}
-                />
+                <Notification />
 
                 <form onSubmit={handleLogin}>
                     <div>
@@ -205,10 +181,7 @@ const App = () => {
         <div>
             <h2>blogs</h2>
 
-            <Notification
-                message={notificationMessage.text}
-                type={notificationMessage.type}
-            />
+            <Notification />
 
             <div>
                 {user.name} is logged in
