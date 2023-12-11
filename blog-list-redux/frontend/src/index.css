@@ -1,0 +1,27 @@
+.blogStyle {
+    padding-top: 10px;
+    padding-left: 2px;
+    border: 2px solid black;
+    border-width: 1px;
+    margin-bottom: 4px;
+}
+
+.smallButton {
+    margin-left: 0.5rem;
+}
+
+.notification {
+    background-color: azure;
+    color: green;
+    padding: 1rem;
+    border-style: solid;
+    margin-bottom: 1rem;
+}
+
+.errorMessage {
+    background-color: rgb(163, 181, 181);
+    color: red;
+    padding: 1rem;
+    border-style: solid;
+    margin-bottom: 1rem;
+}
