@@ -6,11 +6,12 @@ import Notification from "./components/Notification"
 import "./index.css"
 import Togglable from "./components/Togglable"
 import BlogForm from "./components/BlogForm"
-import { useDispatch } from "react-redux"
+import { useDispatch, useSelector } from "react-redux"
 import { setNotification } from "./reducers/notificationReducer"
+import { createBlog, initializeBlogs } from "./reducers/blogReducer"
 
 const App = () => {
-    const [blogs, setBlogs] = useState([])
+    /* const [blogs, setBlogs] = useState([]) */
     const [username, setUsername] = useState("")
     const [password, setPassword] = useState("")
     const [user, setUser] = useState(null)
@@ -18,11 +19,14 @@ const App = () => {
     const dispatch = useDispatch()
 
     useEffect(() => {
-        blogService.getAll().then((blogs) => {
-            const sortedBlogs = blogs.sort((a, b) => b.likes - a.likes)
-            setBlogs(sortedBlogs)
-        })
+        dispatch(initializeBlogs())
+        /* const sortedBlogs = blogs.sort((a, b) => b.likes - a.likes) */
     }, [])
+
+    const blogs = useSelector((state) => {
+        const currentBlogs = state.blogs
+        return currentBlogs
+    })
 
     useEffect(() => {
         const userIsLoggedInJSON = window.localStorage.getItem("loggedInUser")
@@ -72,13 +76,11 @@ const App = () => {
 
     const handleNewBlog = async (newBlog) => {
         try {
-            const responseBlog = await blogService.createBlog(newBlog)
-            console.log(responseBlog)
-            setBlogs([...blogs, { ...responseBlog, user: user }])
+            dispatch(createBlog(newBlog, user))
             blogFormRef.current.toggleVisibility()
             dispatch(
                 setNotification({
-                    content: `new blog ${responseBlog.title} added`,
+                    content: `new blog ${newBlog.title} added`,
                     kind: "info",
                 })
             )
@@ -98,7 +100,7 @@ const App = () => {
             await blogService.updateBlog(id, blog)
             dispatch(
                 setNotification({
-                    content: `voted for blog ${blog.title}`,
+                    content: `liked blog ${blog.title}`,
                     kind: "info",
                 })
             )
@@ -137,9 +139,6 @@ const App = () => {
             }
         }
     }
-
-    /* 	const sortedBlogs = blogs.sort((a, b) => a.likes - b.likes)
-	const mostLikesFirst = sortedBlogs.reverse() */
 
     const blogFormRef = useRef()
 
@@ -205,15 +204,17 @@ const App = () => {
             </Togglable>
 
             <br />
-            {blogs.map((blog) => (
-                <Blog
-                    key={blog.id}
-                    blog={blog}
-                    updateBlog={updateLikes}
-                    deleteBlog={deleteThisBlog}
-                    currentUserName={user.username}
-                />
-            ))}
+            {blogs
+                .toSorted((a, b) => b.likes - a.likes)
+                .map((blog) => (
+                    <Blog
+                        key={blog.id}
+                        blog={blog}
+                        updateBlog={updateLikes}
+                        deleteBlog={deleteThisBlog}
+                        currentUserName={user.username}
+                    />
+                ))}
         </div>
     )
 }
