@@ -8,13 +8,23 @@ import Togglable from "./components/Togglable"
 import BlogForm from "./components/BlogForm"
 import { useDispatch, useSelector } from "react-redux"
 import { setNotification } from "./reducers/notificationReducer"
-import { createBlog, initializeBlogs } from "./reducers/blogReducer"
+import {
+    createBlog,
+    deleteBlog,
+    initializeBlogs,
+    likeBlog,
+} from "./reducers/blogReducer"
+import {
+    logOutCurrentUser,
+    rememberUser,
+    userLogIn,
+} from "./reducers/userReducer"
 
 const App = () => {
     /* const [blogs, setBlogs] = useState([]) */
     const [username, setUsername] = useState("")
     const [password, setPassword] = useState("")
-    const [user, setUser] = useState(null)
+    /* const [user, setUser] = useState(null) */
 
     const dispatch = useDispatch()
 
@@ -23,46 +33,49 @@ const App = () => {
         /* const sortedBlogs = blogs.sort((a, b) => b.likes - a.likes) */
     }, [])
 
+    useEffect(() => {
+        /*         const userIsLoggedInJSON = window.localStorage.getItem("loggedInUser")
+        if (userIsLoggedInJSON) {
+            const user = JSON.parse(userIsLoggedInJSON)
+            dispatch(userLogIn(user))
+        } */
+        dispatch(rememberUser())
+    }, [])
+
     const blogs = useSelector((state) => {
         const currentBlogs = state.blogs
         return currentBlogs
     })
 
-    useEffect(() => {
-        const userIsLoggedInJSON = window.localStorage.getItem("loggedInUser")
-        if (userIsLoggedInJSON) {
-            const user = JSON.parse(userIsLoggedInJSON)
-            setUser(user)
-            blogService.setToken(user.token)
-        }
-    }, [])
+    const loggedInUser = useSelector(({ user }) => user)
 
     const userLogOut = () => {
         /* window.localStorage.removeItem('loggedInUser') */
-        window.localStorage.clear()
+        /* window.localStorage.clear()
         setUser(null)
-        window.location.reload()
+        window.location.reload() */
+        dispatch(logOutCurrentUser())
     }
 
     const handleLogin = async (event) => {
         event.preventDefault()
-
         try {
-            const user = await loginService.login({
+            /*             const user = await loginService.login({
                 username,
                 password,
-            })
-            blogService.setToken(user.token)
-            setUser(user)
-            setUsername("")
-            setPassword("")
+            }) */
+            /* blogService.setToken(user.token)
+            setUser(user) */
+            dispatch(userLogIn(username, password))
             dispatch(
                 setNotification({
-                    content: `logged in as ${user.username}`,
+                    content: `logged in as ${username}`,
                     kind: "info",
                 })
             )
-            window.localStorage.setItem("loggedInUser", JSON.stringify(user))
+            setUsername("")
+            setPassword("")
+            /* window.localStorage.setItem("loggedInUser", JSON.stringify(user)) */
         } catch (error) {
             console.log(error)
             dispatch(
@@ -76,7 +89,7 @@ const App = () => {
 
     const handleNewBlog = async (newBlog) => {
         try {
-            dispatch(createBlog(newBlog, user))
+            dispatch(createBlog(newBlog, loggedInUser))
             blogFormRef.current.toggleVisibility()
             dispatch(
                 setNotification({
@@ -97,7 +110,7 @@ const App = () => {
 
     const updateLikes = async (id, blog) => {
         try {
-            await blogService.updateBlog(id, blog)
+            dispatch(likeBlog(id, blog))
             dispatch(
                 setNotification({
                     content: `liked blog ${blog.title}`,
@@ -118,11 +131,7 @@ const App = () => {
     const deleteThisBlog = async (id, name) => {
         if (confirm(`Delete ${name} ?`) === true) {
             try {
-                await blogService.deleteBlog(id)
-                const blogsWithoutDeleted = blogs.filter(
-                    (blog) => blog.id !== id
-                )
-                setBlogs(blogsWithoutDeleted)
+                dispatch(deleteBlog(id))
                 dispatch(
                     setNotification({
                         content: `blog ${name} deleted`,
@@ -142,7 +151,7 @@ const App = () => {
 
     const blogFormRef = useRef()
 
-    if (user === null) {
+    if (loggedInUser === null) {
         return (
             <div>
                 <h2>Log in to application</h2>
@@ -193,7 +202,7 @@ const App = () => {
             <Notification />
 
             <div>
-                {user.name} is logged in
+                {loggedInUser.name} is logged in
                 <button id="logout-button" type="button" onClick={userLogOut}>
                     logout
                 </button>
@@ -212,7 +221,7 @@ const App = () => {
                         blog={blog}
                         updateBlog={updateLikes}
                         deleteBlog={deleteThisBlog}
-                        currentUserName={user.username}
+                        currentUserName={loggedInUser.username}
                     />
                 ))}
         </div>

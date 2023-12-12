@@ -1,36 +1,28 @@
-import { useState } from 'react'
-import PropTypes from 'prop-types'
+import { useState } from "react"
+import PropTypes from "prop-types"
+import { useDispatch } from "react-redux"
+import { likeBlog } from "../reducers/blogReducer"
+import { setNotification } from "../reducers/notificationReducer"
 
 const Blog = ({ blog, updateBlog, deleteBlog, currentUserName }) => {
     const [visible, setVisible] = useState(false)
-    const [buttonContent, setButtonContent] = useState('view')
-    const [newLikes, setNewLikes] = useState(blog.likes)
+    const [buttonContent, setButtonContent] = useState("view")
+    /* const [newLikes, setNewLikes] = useState(blog.likes) */
+
+    const dispatch = useDispatch()
 
     const handleVisibility = () => {
         setVisible(!visible)
-        if (buttonContent === 'view') {
-            setButtonContent('hide')
+        if (buttonContent === "view") {
+            setButtonContent("hide")
         } else {
-            setButtonContent('view')
+            setButtonContent("view")
         }
     }
 
-    const handleLiking = (event) => {
-        event.preventDefault()
-
-        const likesPlusOne = newLikes + 1
-
-        const updatedBlog = {
-            title: blog.title,
-            author: blog.author,
-            url: blog.url,
-            likes: likesPlusOne,
-            /* user: blog.user.id */
-        }
-
-        updateBlog(blog.id, updatedBlog)
-
-        setNewLikes(likesPlusOne)
+    const handleLiking = async () => {
+        updateBlog(blog.id, blog)
+        /*         setNewLikes(likesPlusOne) */
     }
 
     const handleDelete = (event) => {
@@ -38,7 +30,7 @@ const Blog = ({ blog, updateBlog, deleteBlog, currentUserName }) => {
         deleteBlog(blog.id, blog.title)
     }
 
-    const showWhenVisible = { display: visible ? '' : 'none' }
+    const showWhenVisible = { display: visible ? "" : "none" }
 
     const sameUser = currentUserName === blog.user.username
 
@@ -53,7 +45,7 @@ const Blog = ({ blog, updateBlog, deleteBlog, currentUserName }) => {
             <div style={showWhenVisible} id="extra-info">
                 <div>{blog.url}</div>
                 <div id="blogLikes">
-                    {newLikes}{' '}
+                    {blog.likes}{" "}
                     <button className="likeButton" onClick={handleLiking}>
                         like
                     </button>
@@ -64,7 +56,7 @@ const Blog = ({ blog, updateBlog, deleteBlog, currentUserName }) => {
                         remove
                     </button>
                 ) : (
-                    ''
+                    ""
                 )}
             </div>
         </div>
