@@ -1,25 +1,16 @@
-const Notification = ({ message, type }) => {
-	if (type === "") {
+import { useContext } from "react"
+import NotificationContext from "../NotificationContext"
 
-		return null
+const Notification = () => {
+    const [notification, dispatch] = useContext(NotificationContext)
 
-	} else if (type === "info") {
-
-		return (
-			<div className="notification">
-				{message}
-			</div>
-		)
-
-	} else if (type === "error") {
-
-		return (
-			<div className="errorMessage">
-				{message}
-			</div>
-		)
-	}
-  
+    if (!notification) {
+        return null
+    } else if (notification.kind === "info") {
+        return <div className="notification">{notification.content}</div>
+    } else if (notification.kind === "error") {
+        return <div className="errorMessage">{notification.content}</div>
+    }
 }
 
 export default Notification
