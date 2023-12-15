@@ -1,32 +1,39 @@
 import { useState, useEffect, useRef, useContext } from "react"
 import Blog from "./components/Blog"
-import blogService from "./services/blogs"
+import blogService, { createBlog, getAll } from "./services/blogs"
 import loginService from "./services/login"
 import Notification from "./components/Notification"
 import "./index.css"
 import Togglable from "./components/Togglable"
 import BlogForm from "./components/BlogForm"
 import NotificationContext from "./NotificationContext"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
 const App = () => {
-    const [blogs, setBlogs] = useState([])
+    /* const [blogs, setBlogs] = useState([]) */
     const [username, setUsername] = useState("")
     const [password, setPassword] = useState("")
     const [user, setUser] = useState(null)
 
     const [notification, dispatch] = useContext(NotificationContext)
 
-    /* 	const [notificationMessage, setNotificationMessage] = useState({type:"", text:""}) */
-    /* 	const [blogName, setBlogName] = useState("")
-	const [blogAuthor, setBlogAuthor] = useState("")
-	const [blogURL, setBlogURL] = useState("")
- */
-    useEffect(() => {
-        blogService.getAll().then((blogs) => {
-            const sortedBlogs = blogs.sort((a, b) => b.likes - a.likes)
-            setBlogs(sortedBlogs)
-        })
-    }, [])
+    const result = useQuery({
+        queryKey: ["blogs"],
+        queryFn: getAll,
+        retry: 1,
+        refetchOnWindowFocus: false,
+    })
+
+    const queryClient = useQueryClient()
+
+    const newBlogMutation = useMutation({
+        mutationFn: createBlog,
+        onSuccess: (newBlog) => {
+            const newWithUser = { ...newBlog, user: user }
+            const currentBlogs = queryClient.getQueryData(["blogs"])
+            queryClient.setQueryData(["blogs"], [...currentBlogs, newWithUser])
+        },
+    })
 
     useEffect(() => {
         const userIsLoggedInJSON = window.localStorage.getItem("loggedInUser")
@@ -74,42 +81,28 @@ const App = () => {
     }
 
     const handleNewBlog = async (newBlog) => {
-        /* 		event.preventDefault()
+        /* event.preventDefault() */
 
-		const newBlog = {
+        /* 		const newBlog = {
 			title: blogName,
 			author: blogAuthor,
 			url: blogURL
 		} */
-        try {
-            const responseBlog = await blogService.createBlog(newBlog)
+        /*             const responseBlog = await blogService.createBlog(newBlog)
             console.log(responseBlog)
-            setBlogs([...blogs, { ...responseBlog, user: user }])
-            blogFormRef.current.toggleVisibility()
-            /* 			setBlogName("")
-			setBlogAuthor("")
-			setBlogURL("") */
-            dispatch({
-                type: "SET",
-                payload: {
-                    content: `created new blog ${responseBlog.title}`,
-                    kind: "info",
-                },
-            })
-            setTimeout(() => {
-                dispatch({ type: "RESET" })
-            }, 5000)
-        } catch (error) {
-            console.log(error)
-            /*             setNotificationMessage({
-                ...notificationMessage,
-                type: "error",
-                text: `could not add blog. ${error.response.data.error}`,
-            })
-            setTimeout(() => {
-                setNotificationMessage("")
-            }, 5000) */
-        }
+            setBlogs([...blogs, { ...responseBlog, user: user }]) */
+        newBlogMutation.mutate(newBlog)
+        blogFormRef.current.toggleVisibility()
+        dispatch({
+            type: "SET",
+            payload: {
+                content: `created new blog ${newBlog.title}`,
+                kind: "info",
+            },
+        })
+        setTimeout(() => {
+            dispatch({ type: "RESET" })
+        }, 5000)
     }
 
     const updateLikes = async (id, blog) => {
@@ -165,6 +158,10 @@ const App = () => {
 
     /* 	const sortedBlogs = blogs.sort((a, b) => a.likes - b.likes)
 	const mostLikesFirst = sortedBlogs.reverse() */
+    /* 
+    if (result.isLoading && user !== null) {
+        return <div>loading data...</div>
+    } */
 
     const blogFormRef = useRef()
 
@@ -211,6 +208,12 @@ const App = () => {
             </div>
         )
     }
+
+    if (result.isLoading) {
+        return <div>loading data...</div>
+    }
+
+    const blogs = result.data.sort((a, b) => b.likes - a.likes)
 
     return (
         <div>
