@@ -21,9 +21,9 @@ import {
 } from "./reducers/userReducer"
 
 const App = () => {
-    /* const [blogs, setBlogs] = useState([]) */
     const [username, setUsername] = useState("")
     const [password, setPassword] = useState("")
+    /* const [blogs, setBlogs] = useState([]) */
     /* const [user, setUser] = useState(null) */
 
     const dispatch = useDispatch()
@@ -34,12 +34,12 @@ const App = () => {
     }, [])
 
     useEffect(() => {
-        /*         const userIsLoggedInJSON = window.localStorage.getItem("loggedInUser")
+        dispatch(rememberUser())
+        /* const userIsLoggedInJSON = window.localStorage.getItem("loggedInUser")
         if (userIsLoggedInJSON) {
             const user = JSON.parse(userIsLoggedInJSON)
             dispatch(userLogIn(user))
         } */
-        dispatch(rememberUser())
     }, [])
 
     const blogs = useSelector((state) => {
@@ -50,102 +50,56 @@ const App = () => {
     const loggedInUser = useSelector(({ user }) => user)
 
     const userLogOut = () => {
+        dispatch(logOutCurrentUser())
         /* window.localStorage.removeItem('loggedInUser') */
         /* window.localStorage.clear()
         setUser(null)
         window.location.reload() */
-        dispatch(logOutCurrentUser())
     }
 
     const handleLogin = async (event) => {
         event.preventDefault()
-        try {
-            /*             const user = await loginService.login({
-                username,
-                password,
-            }) */
-            /* blogService.setToken(user.token)
-            setUser(user) */
-            dispatch(userLogIn(username, password))
-            dispatch(
-                setNotification({
-                    content: `logged in as ${username}`,
-                    kind: "info",
-                })
-            )
-            setUsername("")
-            setPassword("")
-            /* window.localStorage.setItem("loggedInUser", JSON.stringify(user)) */
-        } catch (error) {
-            console.log(error)
-            dispatch(
-                setNotification({
-                    content: `unable to login. wrong username or password`,
-                    kind: "error",
-                })
-            )
-        }
+        dispatch(userLogIn(username, password))
+        dispatch(
+            setNotification({
+                content: `logged in as ${username}`,
+                kind: "info",
+            })
+        )
+        setUsername("")
+        setPassword("")
     }
 
     const handleNewBlog = async (newBlog) => {
-        try {
-            dispatch(createBlog(newBlog, loggedInUser))
-            blogFormRef.current.toggleVisibility()
-            dispatch(
-                setNotification({
-                    content: `new blog ${newBlog.title} added`,
-                    kind: "info",
-                })
-            )
-        } catch (error) {
-            console.log(error)
-            dispatch(
-                setNotification({
-                    content: `could not add blog. ${error.response.data.error}`,
-                    kind: "error",
-                })
-            )
-        }
+        dispatch(createBlog(newBlog, loggedInUser))
+        blogFormRef.current.toggleVisibility()
+        dispatch(
+            setNotification({
+                content: `new blog ${newBlog.title} added`,
+                kind: "info",
+            })
+        )
     }
 
     const updateLikes = async (id, blog) => {
-        try {
-            dispatch(likeBlog(id, blog))
-            dispatch(
-                setNotification({
-                    content: `liked blog ${blog.title}`,
-                    kind: "info",
-                })
-            )
-        } catch (error) {
-            console.log(error)
-            dispatch(
-                setNotification({
-                    content: `could not update likes. ${error.response.data.error}`,
-                    kind: "error",
-                })
-            )
-        }
+        dispatch(likeBlog(id, blog))
+        dispatch(
+            setNotification({
+                content: `liked blog ${blog.title}`,
+                kind: "info",
+            })
+        )
     }
 
     const deleteThisBlog = async (id, name) => {
         if (confirm(`Delete ${name} ?`) === true) {
-            try {
-                dispatch(deleteBlog(id))
-                dispatch(
-                    setNotification({
-                        content: `blog ${name} deleted`,
-                        kind: "info",
-                    })
-                )
-            } catch (error) {
-                dispatch(
-                    setNotification({
-                        content: `could not delete blog. ${error.response.data.error}`,
-                        kind: "error",
-                    })
-                )
-            }
+            dispatch(deleteBlog(id))
+            dispatch(
+                setNotification({
+                    content: `blog ${name} deleted`,
+                    kind: "info",
+                })
+            )
         }
     }
 

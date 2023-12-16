@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit"
 import blogService from "../services/blogs"
+import { setNotification } from "./notificationReducer"
 
 const blogSlice = createSlice({
     name: "blogs",
@@ -45,23 +46,48 @@ export const createBlog = (blogObject, user) => {
         } catch (error) {
             console.log(error.response.data.error)
         } */
-        const newBlog = await blogService.createBlog(blogObject)
-        const blogWithUser = { ...newBlog, user: user }
-        dispatch(addBlog(blogWithUser))
+        try {
+            const newBlog = await blogService.createBlog(blogObject)
+            const blogWithUser = { ...newBlog, user: user }
+            dispatch(addBlog(blogWithUser))
+        } catch (error) {
+            dispatch(
+                setNotification({
+                    content: `could not add blog. ${error}`,
+                    kind: "error",
+                })
+            )
+        }
     }
 }
 
 export const likeBlog = (id, blogObject) => {
     return async (dispatch) => {
-        const blogWithLike = { ...blogObject, likes: blogObject.likes + 1 }
-        const likedBlog = await blogService.updateBlog(id, blogWithLike)
-        dispatch(increaseLikes(likedBlog.id))
+        try {
+            const blogWithLike = { ...blogObject, likes: blogObject.likes + 1 }
+            const likedBlog = await blogService.updateBlog(id, blogWithLike)
+            dispatch(increaseLikes(likedBlog.id))
+        } catch (error) {
+            dispatch(
+                setNotification({
+                    content: `could not update likes. ${error}`,
+                    kind: "error",
+                })
+            )
+        }
     }
 }
 
 export const deleteBlog = (id) => {
     return async (dispatch) => {
-        await blogService.deleteBlog(id)
-        dispatch(removeBlog(id))
+        try {
+            await blogService.deleteBlog(id)
+            dispatch(removeBlog(id))
+        } catch (error) {
+            setNotification({
+                content: `could not delete blog. ${error}`,
+                kind: "error",
+            })
+        }
     }
 }
