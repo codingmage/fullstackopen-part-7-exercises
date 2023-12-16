@@ -1,6 +1,11 @@
 import { useState, useEffect, useRef, useContext } from "react"
 import Blog from "./components/Blog"
-import blogService, { createBlog, getAll } from "./services/blogs"
+import blogService, {
+    createBlog,
+    deleteBlog,
+    getAll,
+    updateBlog,
+} from "./services/blogs"
 import loginService from "./services/login"
 import Notification from "./components/Notification"
 import "./index.css"
@@ -8,14 +13,18 @@ import Togglable from "./components/Togglable"
 import BlogForm from "./components/BlogForm"
 import NotificationContext from "./NotificationContext"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useLoggedUserDispatch, useLoggedUserValue } from "./UserContext"
 
 const App = () => {
-    /* const [blogs, setBlogs] = useState([]) */
     const [username, setUsername] = useState("")
     const [password, setPassword] = useState("")
-    const [user, setUser] = useState(null)
+    /* const [blogs, setBlogs] = useState([]) */
+    /* const [user, setUser] = useState(null) */
 
     const [notification, dispatch] = useContext(NotificationContext)
+
+    const userDispatch = useLoggedUserDispatch()
+    const user = useLoggedUserValue()
 
     const result = useQuery({
         queryKey: ["blogs"],
@@ -32,6 +41,53 @@ const App = () => {
             const newWithUser = { ...newBlog, user: user }
             const currentBlogs = queryClient.getQueryData(["blogs"])
             queryClient.setQueryData(["blogs"], [...currentBlogs, newWithUser])
+            dispatch({
+                type: "SET",
+                payload: {
+                    content: `created new blog ${newBlog.title}`,
+                    kind: "info",
+                },
+            })
+            setTimeout(() => {
+                dispatch({ type: "RESET" })
+            }, 5000)
+        },
+    })
+
+    const likeBlogMutation = useMutation({
+        mutationFn: updateBlog,
+        onSuccess: (blog) => {
+            const currentBlogs = queryClient.getQueryData(["blogs"])
+            queryClient.setQueryData(
+                ["blogs"],
+                currentBlogs.map((oldBlog) =>
+                    oldBlog.id !== blog.id ? oldBlog : blog
+                )
+            )
+            dispatch({
+                type: "SET",
+                payload: {
+                    content: `liked blog ${blog.title}`,
+                    kind: "info",
+                },
+            })
+            setTimeout(() => {
+                dispatch({ type: "RESET" })
+            }, 5000)
+        },
+    })
+
+    const deleteBlogMutation = useMutation({
+        mutationFn: deleteBlog,
+        onSuccess: () => {
+            queryClient.invalidateQueries(["blogs"])
+            dispatch({
+                type: "SET",
+                payload: { content: `blog deleted`, kind: "info" },
+            })
+            setTimeout(() => {
+                dispatch({ type: "RESET" })
+            }, 5000)
         },
     })
 
@@ -39,7 +95,7 @@ const App = () => {
         const userIsLoggedInJSON = window.localStorage.getItem("loggedInUser")
         if (userIsLoggedInJSON) {
             const user = JSON.parse(userIsLoggedInJSON)
-            setUser(user)
+            userDispatch({ type: "LOGIN", payload: user })
             blogService.setToken(user.token)
         }
     }, [])
@@ -47,7 +103,7 @@ const App = () => {
     const userLogOut = () => {
         /* window.localStorage.removeItem('loggedInUser') */
         window.localStorage.clear()
-        setUser(null)
+        userDispatch({ type: "LOGOUT" })
         window.location.reload()
         dispatch({
             type: "SET",
@@ -67,7 +123,7 @@ const App = () => {
         })
         /*       console.log(user) */
         blogService.setToken(user.token)
-        setUser(user)
+        userDispatch({ type: "LOGIN", payload: user })
         setUsername("")
         setPassword("")
         dispatch({
@@ -93,66 +149,39 @@ const App = () => {
             setBlogs([...blogs, { ...responseBlog, user: user }]) */
         newBlogMutation.mutate(newBlog)
         blogFormRef.current.toggleVisibility()
-        dispatch({
-            type: "SET",
-            payload: {
-                content: `created new blog ${newBlog.title}`,
-                kind: "info",
-            },
-        })
-        setTimeout(() => {
-            dispatch({ type: "RESET" })
-        }, 5000)
     }
 
-    const updateLikes = async (id, blog) => {
-        try {
-            await blogService.updateBlog(id, blog)
-            dispatch({
-                type: "SET",
-                payload: { content: `liked blog ${blog.title}`, kind: "info" },
-            })
-            setTimeout(() => {
-                dispatch({ type: "RESET" })
-            }, 5000)
-        } catch (error) {
-            console.log(error)
-            /*             setNotificationMessage({
-                ...notificationMessage,
-                type: "error",
-                text: `could not update likes. ${error.response.data.error}`,
-            })
-            setTimeout(() => {
-                setNotificationMessage("")
-            }, 5000) */
-        }
+    const updateLikes = async (likedBlog) => {
+        likeBlogMutation.mutate(likedBlog)
     }
 
     const deleteThisBlog = async (id, name) => {
         if (confirm(`Delete ${name} ?`) === true) {
-            try {
-                await blogService.deleteBlog(id)
+            deleteBlogMutation.mutate(id)
+            /*             try { */
+            /*                 await blogService.deleteBlog(id)
                 const blogsWithoutDeleted = blogs.filter(
                     (blog) => blog.id !== id
                 )
-                setBlogs(blogsWithoutDeleted)
-                dispatch({
-                    type: "SET",
-                    payload: { content: `deleted blog ${name}`, kind: "info" },
-                })
-                setTimeout(() => {
-                    dispatch({ type: "RESET" })
-                }, 5000)
-            } catch (error) {
-                /*                 setNotificationMessage({
+                setBlogs(blogsWithoutDeleted) */
+            /* deleteBlogMutation.mutate(id) */
+            /*             dispatch({
+                type: "SET",
+                payload: { content: `deleted blog ${name}`, kind: "info" },
+            })
+            setTimeout(() => {
+                dispatch({ type: "RESET" })
+            }, 5000) */
+            /*             } catch (error) {
+                                 setNotificationMessage({
                     ...notificationMessage,
                     type: "error",
                     text: `could not delete blog. ${error.response.data.error}`,
                 })
                 setTimeout(() => {
                     setNotificationMessage("")
-                }, 5000) */
-            }
+                }, 5000) 
+            } */
         }
     }
 

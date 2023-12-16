@@ -2,74 +2,72 @@ import { useState } from "react"
 import PropTypes from "prop-types"
 
 const Blog = ({ blog, updateBlog, deleteBlog, currentUserName }) => {
+    const [visible, setVisible] = useState(false)
+    const [buttonContent, setButtonContent] = useState("view")
+    /*     const [newLikes, setNewLikes] = useState(blog.likes) */
 
-	const [visible, setVisible] = useState(false)
-	const [buttonContent, setButtonContent] = useState("view")
-	const [newLikes, setNewLikes] = useState(blog.likes)
+    const handleVisibility = () => {
+        setVisible(!visible)
+        if (buttonContent === "view") {
+            setButtonContent("hide")
+        } else {
+            setButtonContent("view")
+        }
+    }
 
-	const handleVisibility = () => {
-		setVisible(!visible)
-		if(buttonContent === "view") {
-			setButtonContent("hide")
-		} else {
-			setButtonContent("view")
-		}
-		
-	}
+    const handleLiking = (event) => {
+        event.preventDefault()
 
-	const handleLiking = (event) => {
-		event.preventDefault()
+        const updatedBlog = { ...blog, likes: blog.likes + 1 }
 
-		const likesPlusOne = newLikes + 1
+        updateBlog(updatedBlog)
 
-		const updatedBlog = {
-			title: blog.title,
-			author: blog.author,
-			url: blog.url, 
-			likes: likesPlusOne, 
-			/* user: blog.user.id */
-		}
+        /* setNewLikes(likesPlusOne) */
+    }
 
-		updateBlog(blog.id, updatedBlog)
+    const handleDelete = (event) => {
+        event.preventDefault()
+        deleteBlog(blog.id, blog.title)
+    }
 
-		setNewLikes(likesPlusOne)
-	
-	}
+    const showWhenVisible = { display: visible ? "" : "none" }
 
-	const handleDelete = (event) => {
-		event.preventDefault()
-		deleteBlog(blog.id, blog.title)
+    const sameUser = currentUserName === blog.user.username
 
-	}
-
-
-	const showWhenVisible = { display: visible ? "" : "none" }
-
-	const sameUser = currentUserName === blog.user.username
-
-	return (
-		<div className="blogStyle">
-			<span id="main-info" >
-				{blog.title} - {blog.author} 
-				<button className="smallButton" onClick={handleVisibility}>{buttonContent}</button>
-			</span>
-			<div style={showWhenVisible} id="extra-info">
-				<div>{blog.url}</div>
-				<div id="blogLikes">{newLikes} <button className="likeButton" onClick={handleLiking}>like</button></div>
-				<div>{blog.user.name}</div>
-				{sameUser ? <button id="delete-button" onClick={handleDelete}>remove</button> : ""}
-			</div>
-
-		</div>  
-	)
-
+    return (
+        <div className="blogStyle">
+            <span id="main-info">
+                {blog.title} - {blog.author}
+                <button className="smallButton" onClick={handleVisibility}>
+                    {buttonContent}
+                </button>
+            </span>
+            <div style={showWhenVisible} id="extra-info">
+                <div>{blog.url}</div>
+                <div id="blogLikes">
+                    {blog.likes}{" "}
+                    <button className="likeButton" onClick={handleLiking}>
+                        like
+                    </button>
+                </div>
+                <div>{blog.user.name}</div>
+                {sameUser ? (
+                    <button id="delete-button" onClick={handleDelete}>
+                        remove
+                    </button>
+                ) : (
+                    ""
+                )}
+            </div>
+        </div>
+    )
 }
 
 Blog.propTypes = {
-	blog: PropTypes.object.isRequired , 
-	updateBlog: PropTypes.func.isRequired,
-	deleteBlog: PropTypes.func.isRequired,
-	currentUserName: PropTypes.string.isRequired
+    blog: PropTypes.object.isRequired,
+    updateBlog: PropTypes.func.isRequired,
+    deleteBlog: PropTypes.func.isRequired,
+    currentUserName: PropTypes.string.isRequired,
 }
 
 export default Blog
