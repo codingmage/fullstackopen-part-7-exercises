@@ -23,6 +23,7 @@ import { Link, Route, Routes, useMatch } from "react-router-dom"
 import userService from "./services/users"
 import UsersComponent from "./components/UsersComponent"
 import FullBlog from "./components/FullBlog"
+import { AppBar, Button, Toolbar } from "@mui/material"
 
 const Main = ({ blogs }) => {
     const dispatch = useDispatch()
@@ -66,8 +67,6 @@ const Main = ({ blogs }) => {
 
     return (
         <div>
-            <Link to={"/users"}>Users</Link>
-
             <Togglable buttonLabel="create new blog" ref={blogFormRef}>
                 <BlogForm createBlog={handleNewBlog} />
             </Togglable>
@@ -221,16 +220,39 @@ const App = () => {
 
     return (
         <div>
-            <h2>blogs</h2>
+            <AppBar position="static">
+                <Toolbar
+                    variant="dense"
+                    style={{ justifyContent: "space-between" }}
+                >
+                    <div id="nav-buttons-container">
+                        <Button color="inherit" variant="outlined">
+                            <Link to={"/"}>Home</Link>
+                        </Button>
+                        <Button color="inherit" variant="outlined">
+                            <Link to={"/users"}>Users</Link>
+                        </Button>
+                    </div>
+                    <div>
+                        <span>{loggedInUser.name} is logged in</span>
+                        <Button
+                            id="logout-button"
+                            /*                             type="button" */
+                            color="inherit"
+                            size="small"
+                            variant="outlined"
+                            onClick={userLogOut}
+                        >
+                            logout
+                        </Button>
+                    </div>
+                </Toolbar>
+            </AppBar>
+
+            <h1>blog app</h1>
 
             <Notification />
 
-            <div>
-                {loggedInUser.name} is logged in
-                <button id="logout-button" type="button" onClick={userLogOut}>
-                    logout
-                </button>
-            </div>
             <br />
 
             <Routes>

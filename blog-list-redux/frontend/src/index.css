@@ -25,3 +25,22 @@
     border-style: solid;
     margin-bottom: 1rem;
 }
+
+#logout-button{
+    margin-left: 0.5rem;
+}
+
+#nav-buttons-container{
+    display: flex;
+    gap: 1rem;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+
+}
+
+a:hover {
+    color:blue
+}
