@@ -22,6 +22,7 @@ import {
 import { Link, Route, Routes, useMatch } from "react-router-dom"
 import userService from "./services/users"
 import UsersComponent from "./components/UsersComponent"
+import FullBlog from "./components/FullBlog"
 
 const Main = ({ blogs }) => {
     const dispatch = useDispatch()
@@ -41,7 +42,7 @@ const Main = ({ blogs }) => {
         )
     }
 
-    const updateLikes = async (id, blog) => {
+    /*     const updateLikes = async (id, blog) => {
         dispatch(likeBlog(id, blog))
         dispatch(
             setNotification({
@@ -61,7 +62,7 @@ const Main = ({ blogs }) => {
                 })
             )
         }
-    }
+    } */
 
     return (
         <div>
@@ -75,13 +76,19 @@ const Main = ({ blogs }) => {
             {blogs
                 .toSorted((a, b) => b.likes - a.likes)
                 .map((blog) => (
-                    <Blog
-                        key={blog.id}
-                        blog={blog}
-                        updateBlog={updateLikes}
-                        deleteBlog={deleteThisBlog}
-                        /*                         currentUserName={loggedInUser.username} */
-                    />
+                    <Link to={`/blogs/${blog.id}`} key={blog.id}>
+                        <div className="blogStyle">
+                            <span id="main-info">
+                                {blog.title} - {blog.author}
+                            </span>
+                        </div>
+                        {/*                         <Blog
+                            blog={blog}
+                            updateBlog={updateLikes}
+                            deleteBlog={deleteThisBlog}
+                            currentUserName={loggedInUser.username}
+                        /> */}
+                    </Link>
                 ))}
         </div>
     )
@@ -158,10 +165,14 @@ const App = () => {
 
     const singleUserMatch = useMatch("/users/:id")
 
-    console.log(singleUserMatch)
-
     const thisUser = singleUserMatch
-        ? users.find((user) => user.id === String(singleUserMatch.params.id))
+        ? users.find((user) => user.id === singleUserMatch.params.id)
+        : null
+
+    const singleBlogMatch = useMatch("/blogs/:id")
+
+    const thisBlog = singleBlogMatch
+        ? blogs.find((blog) => blog.id === singleBlogMatch.params.id)
         : null
 
     if (loggedInUser === null) {
@@ -224,6 +235,10 @@ const App = () => {
 
             <Routes>
                 <Route path="/" element={<Main blogs={blogs} />} />
+                <Route
+                    path="/blogs/:id"
+                    element={<FullBlog blog={thisBlog} />}
+                />
                 <Route
                     path="/users"
                     element={<UsersComponent users={users} />}
