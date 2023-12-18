@@ -19,18 +19,14 @@ import {
     rememberUser,
     userLogIn,
 } from "./reducers/userReducer"
-import { Route, BrowserRouter as Router, Routes } from "react-router-dom"
+import { Link, Route, Routes, useMatch } from "react-router-dom"
 import userService from "./services/users"
-import Table from "@mui/material/Table"
-import TableBody from "@mui/material/TableBody"
-import TableCell from "@mui/material/TableCell"
-import TableContainer from "@mui/material/TableContainer"
-import TableHead from "@mui/material/TableHead"
-import TableRow from "@mui/material/TableRow"
-import Paper from "@mui/material/Paper"
+import UsersComponent from "./components/UsersComponent"
 
 const Main = ({ blogs }) => {
     const dispatch = useDispatch()
+
+    const loggedInUser = useSelector(({ user }) => user)
 
     const blogFormRef = useRef()
 
@@ -69,6 +65,8 @@ const Main = ({ blogs }) => {
 
     return (
         <div>
+            <Link to={"/users"}>Users</Link>
+
             <Togglable buttonLabel="create new blog" ref={blogFormRef}>
                 <BlogForm createBlog={handleNewBlog} />
             </Togglable>
@@ -89,29 +87,22 @@ const Main = ({ blogs }) => {
     )
 }
 
-const Users = ({ users }) => {
+const FullUser = ({ user }) => {
+    if (!user) {
+        return null
+    }
+
     return (
         <div>
-            <h2>Users</h2>
+            <h2>{user.name}</h2>
 
-            <TableContainer sx={{ width: 1 / 3 }} component={Paper}>
-                <Table size="small">
-                    <TableHead>
-                        <TableRow>
-                            <TableCell></TableCell>
-                            <TableCell>blogs created</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {users.map((user) => (
-                            <TableRow key={user.id}>
-                                <TableCell>{user.name}</TableCell>
-                                <TableCell>{user.blogs.length}</TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
+            <h4>added blogs</h4>
+
+            <ul>
+                {user.blogs.map((blog) => (
+                    <li key={blog.id}>{blog.title}</li>
+                ))}
+            </ul>
         </div>
     )
 }
@@ -120,23 +111,15 @@ const App = () => {
     const [username, setUsername] = useState("")
     const [password, setPassword] = useState("")
     const [users, setUsers] = useState([])
-    /* const [blogs, setBlogs] = useState([]) */
-    /* const [user, setUser] = useState(null) */
 
     const dispatch = useDispatch()
 
     useEffect(() => {
         dispatch(initializeBlogs())
-        /* const sortedBlogs = blogs.sort((a, b) => b.likes - a.likes) */
     }, [])
 
     useEffect(() => {
         dispatch(rememberUser())
-        /* const userIsLoggedInJSON = window.localStorage.getItem("loggedInUser")
-        if (userIsLoggedInJSON) {
-            const user = JSON.parse(userIsLoggedInJSON)
-            dispatch(userLogIn(user))
-        } */
     }, [])
 
     useEffect(() => {
@@ -173,40 +156,13 @@ const App = () => {
         setPassword("")
     }
 
-    /*     const handleNewBlog = async (newBlog) => {
-        dispatch(createBlog(newBlog, loggedInUser))
-        blogFormRef.current.toggleVisibility()
-        dispatch(
-            setNotification({
-                content: `new blog ${newBlog.title} added`,
-                kind: "info",
-            })
-        )
-    }
+    const singleUserMatch = useMatch("/users/:id")
 
-    const updateLikes = async (id, blog) => {
-        dispatch(likeBlog(id, blog))
-        dispatch(
-            setNotification({
-                content: `liked blog ${blog.title}`,
-                kind: "info",
-            })
-        )
-    }
+    console.log(singleUserMatch)
 
-    const deleteThisBlog = async (id, name) => {
-        if (confirm(`Delete ${name} ?`) === true) {
-            dispatch(deleteBlog(id))
-            dispatch(
-                setNotification({
-                    content: `blog ${name} deleted`,
-                    kind: "info",
-                })
-            )
-        }
-    } */
-
-    /* const blogFormRef = useRef() */
+    const thisUser = singleUserMatch
+        ? users.find((user) => user.id === String(singleUserMatch.params.id))
+        : null
 
     if (loggedInUser === null) {
         return (
@@ -253,47 +209,31 @@ const App = () => {
     }
 
     return (
-        <Router>
+        <div>
+            <h2>blogs</h2>
+
+            <Notification />
+
             <div>
-                <h2>blogs</h2>
-
-                <Notification />
-
-                <div>
-                    {loggedInUser.name} is logged in
-                    <button
-                        id="logout-button"
-                        type="button"
-                        onClick={userLogOut}
-                    >
-                        logout
-                    </button>
-                </div>
-                <br />
-
-                <Routes>
-                    <Route path="/" element={<Main blogs={blogs} />} />
-                    <Route path="/users" element={<Users users={users} />} />
-                </Routes>
-
-                {/*                 <Togglable buttonLabel="create new blog" ref={blogFormRef}>
-                    <BlogForm createBlog={handleNewBlog} />
-                </Togglable>
-
-                <br />
-                {blogs
-                    .toSorted((a, b) => b.likes - a.likes)
-                    .map((blog) => (
-                        <Blog
-                            key={blog.id}
-                            blog={blog}
-                            updateBlog={updateLikes}
-                            deleteBlog={deleteThisBlog}
-                            currentUserName={loggedInUser.username}
-                        />
-                    ))} */}
+                {loggedInUser.name} is logged in
+                <button id="logout-button" type="button" onClick={userLogOut}>
+                    logout
+                </button>
             </div>
-        </Router>
+            <br />
+
+            <Routes>
+                <Route path="/" element={<Main blogs={blogs} />} />
+                <Route
+                    path="/users"
+                    element={<UsersComponent users={users} />}
+                />
+                <Route
+                    path="/users/:id"
+                    element={<FullUser user={thisUser} />}
+                />
+            </Routes>
+        </div>
     )
 }
 
