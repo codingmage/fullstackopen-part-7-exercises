@@ -1,7 +1,8 @@
 import { useDispatch, useSelector } from "react-redux"
-import { likeBlog } from "../reducers/blogReducer"
+import { likeBlog, postComment } from "../reducers/blogReducer"
 import { deleteBlog } from "../reducers/blogReducer"
 import { useNavigate } from "react-router-dom"
+import { useState } from "react"
 
 const FullBlog = ({ blog }) => {
     const dispatch = useDispatch()
@@ -9,6 +10,8 @@ const FullBlog = ({ blog }) => {
     const loggedInUser = useSelector(({ user }) => user)
 
     const navigate = useNavigate()
+
+    const [comment, setComment] = useState("")
 
     if (!blog) {
         return null
@@ -27,6 +30,14 @@ const FullBlog = ({ blog }) => {
         dispatch(likeBlog(blog.id, blog))
     }
 
+    const handleComment = async (event) => {
+        event.preventDefault()
+
+        if (comment !== "") {
+            dispatch(postComment(comment, blog.id))
+        }
+    }
+
     return (
         <div>
             <h2>
@@ -41,6 +52,26 @@ const FullBlog = ({ blog }) => {
                 </button>
             </div>
             <div>added by {blog.user.name}</div>
+
+            <ul>
+                {blog.comments.map((comment) => (
+                    <li key={comment.id}>{comment.text}</li>
+                ))}
+            </ul>
+
+            <form onSubmit={handleComment}>
+                <div>
+                    <span>
+                        new comment
+                        <input
+                            type="text"
+                            value={comment}
+                            onChange={({ target }) => setComment(target.value)}
+                        />
+                    </span>
+                </div>
+                <button type="submit">Add comment</button>
+            </form>
 
             <div>
                 {sameUser ? (

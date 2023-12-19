@@ -1,14 +1,15 @@
 const blogsRouter = require('express').Router()
 const Blog = require('../models/blog')
+const Comment = require('../models/comment')
 /* const User = require("../models/user") */
 
 // use express-async-errors instead of try/catch
 
 blogsRouter.get('/', async (request, response) => {
-    const blogs = await Blog.find({}).populate('user', {
-        username: 1,
+    const blogs = await Blog.find({}).populate('user comments', {
+        /*         username: 1,
         name: 1,
-        id: 1,
+        id: 1, */
     })
     response.json(blogs)
 })
@@ -98,6 +99,39 @@ blogsRouter.put('/:id', async (request, response) => {
 
 	await Blog.findByIdAndUpdate(request.params.id, updatedBlog, { new: true })
 	response.status(200).end() */
+})
+
+blogsRouter.post('/:id/comments', async (request, response) => {
+    const { comment } = request.body
+
+    const id = request.params.id
+    /* 
+    console.log(`the comment: ${comment}`)
+    console.log(`the blog ${blog}`) */
+
+    const newComment = new Comment({
+        text: comment,
+        blog: id,
+    })
+
+    const savedComment = await newComment.save()
+
+    const thisBlog = await Blog.findById(id)
+
+    thisBlog.comments = [...thisBlog.comments, savedComment]
+
+    await thisBlog.save()
+
+    /*     await Blog.findByIdAndUpdate(
+        blog.id,
+        { ...blog, comments: [...blog.comments, newComment] },
+        { new: true }
+    ) */
+
+    /*     blog.comments = [...blog.comments, savedComment]
+    await blog.save() */
+
+    response.status(201).json(savedComment)
 })
 
 module.exports = blogsRouter

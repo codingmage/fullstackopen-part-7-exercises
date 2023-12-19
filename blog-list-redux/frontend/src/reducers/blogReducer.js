@@ -25,10 +25,22 @@ const blogSlice = createSlice({
             const id = action.payload
             return state.filter((blog) => blog.id !== id)
         },
+        setBlogComment(state, action) {
+            const id = action.payload.id
+            const blogToUpdate = state.find((blog) => blog.id === id)
+            const updatedBlog = {
+                ...blogToUpdate,
+                comments: [
+                    ...blogToUpdate.comments,
+                    action.payload.responseComment,
+                ],
+            }
+            return state.map((blog) => (blog.id === id ? updatedBlog : blog))
+        },
     },
 })
 
-export const { setBlogs, addBlog, increaseLikes, removeBlog } =
+export const { setBlogs, addBlog, increaseLikes, removeBlog, setBlogComment } =
     blogSlice.actions
 export default blogSlice.reducer
 
@@ -86,6 +98,22 @@ export const deleteBlog = (id) => {
         } catch (error) {
             setNotification({
                 content: `could not delete blog. ${error}`,
+                kind: "error",
+            })
+        }
+    }
+}
+
+export const postComment = (comment, id) => {
+    return async (dispatch) => {
+        try {
+            console.log(id)
+            const responseComment = await blogService.commentOnBlog(comment, id)
+            dispatch(setBlogComment({ responseComment, id }))
+        } catch (error) {
+            console.log(error)
+            setNotification({
+                content: `could not add comment. ${error}`,
                 kind: "error",
             })
         }
