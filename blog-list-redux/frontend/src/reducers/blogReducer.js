@@ -62,6 +62,12 @@ export const createBlog = (blogObject, user) => {
             const newBlog = await blogService.createBlog(blogObject)
             const blogWithUser = { ...newBlog, user: user }
             dispatch(addBlog(blogWithUser))
+            dispatch(
+                setNotification({
+                    content: `new blog ${blogObject.title} added`,
+                    kind: "info",
+                })
+            )
         } catch (error) {
             dispatch(
                 setNotification({
@@ -79,6 +85,12 @@ export const likeBlog = (id, blogObject) => {
             const blogWithLike = { ...blogObject, likes: blogObject.likes + 1 }
             const likedBlog = await blogService.updateBlog(id, blogWithLike)
             dispatch(increaseLikes(likedBlog.id))
+            dispatch(
+                setNotification({
+                    content: `liked blog ${blogObject.title}`,
+                    kind: "info",
+                })
+            )
         } catch (error) {
             dispatch(
                 setNotification({
@@ -90,11 +102,17 @@ export const likeBlog = (id, blogObject) => {
     }
 }
 
-export const deleteBlog = (id) => {
+export const deleteBlog = (id, name) => {
     return async (dispatch) => {
         try {
             await blogService.deleteBlog(id)
             dispatch(removeBlog(id))
+            dispatch(
+                setNotification({
+                    content: `blog ${name} deleted`,
+                    kind: "info",
+                })
+            )
         } catch (error) {
             setNotification({
                 content: `could not delete blog. ${error}`,

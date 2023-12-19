@@ -23,7 +23,7 @@ import { Link, Route, Routes, useMatch } from "react-router-dom"
 import userService from "./services/users"
 import UsersComponent from "./components/UsersComponent"
 import FullBlog from "./components/FullBlog"
-import { AppBar, Button, Toolbar } from "@mui/material"
+import { AppBar, Button, TextField, Toolbar } from "@mui/material"
 
 const Main = ({ blogs }) => {
     const dispatch = useDispatch()
@@ -35,39 +35,11 @@ const Main = ({ blogs }) => {
     const handleNewBlog = async (newBlog) => {
         dispatch(createBlog(newBlog, loggedInUser))
         blogFormRef.current.toggleVisibility()
-        dispatch(
-            setNotification({
-                content: `new blog ${newBlog.title} added`,
-                kind: "info",
-            })
-        )
     }
-
-    /*     const updateLikes = async (id, blog) => {
-        dispatch(likeBlog(id, blog))
-        dispatch(
-            setNotification({
-                content: `liked blog ${blog.title}`,
-                kind: "info",
-            })
-        )
-    }
-
-    const deleteThisBlog = async (id, name) => {
-        if (confirm(`Delete ${name} ?`) === true) {
-            dispatch(deleteBlog(id))
-            dispatch(
-                setNotification({
-                    content: `blog ${name} deleted`,
-                    kind: "info",
-                })
-            )
-        }
-    } */
 
     return (
         <div>
-            <Togglable buttonLabel="create new blog" ref={blogFormRef}>
+            <Togglable /* buttonLabel="create new blog" */ ref={blogFormRef}>
                 <BlogForm createBlog={handleNewBlog} />
             </Togglable>
 
@@ -81,12 +53,6 @@ const Main = ({ blogs }) => {
                                 {blog.title} - {blog.author}
                             </span>
                         </div>
-                        {/*                         <Blog
-                            blog={blog}
-                            updateBlog={updateLikes}
-                            deleteBlog={deleteThisBlog}
-                            currentUserName={loggedInUser.username}
-                        /> */}
                     </Link>
                 ))}
         </div>
@@ -151,15 +117,19 @@ const App = () => {
 
     const handleLogin = async (event) => {
         event.preventDefault()
-        dispatch(userLogIn(username, password))
-        dispatch(
-            setNotification({
-                content: `logged in as ${username}`,
-                kind: "info",
-            })
-        )
-        setUsername("")
-        setPassword("")
+
+        if (username === "" || password === "") {
+            dispatch(
+                setNotification({
+                    content: `please provide a name and a password`,
+                    kind: "error",
+                })
+            )
+        } else {
+            dispatch(userLogIn(username, password))
+            setUsername("")
+            setPassword("")
+        }
     }
 
     const singleUserMatch = useMatch("/users/:id")
@@ -176,50 +146,60 @@ const App = () => {
 
     if (loggedInUser === null) {
         return (
-            <div>
-                <h2>Log in to application</h2>
-
+            <div id="login-container">
                 <Notification />
 
-                <form onSubmit={handleLogin}>
+                <form id="login-style" onSubmit={handleLogin}>
+                    <h2>Login to access the app</h2>
                     <div>
                         <span>
-                            username
-                            <input
-                                type="text"
-                                value={username}
-                                name="Username"
+                            <TextField
+                                /* type="text" */
+                                // name="Username"
+                                label="username"
                                 id="input-username"
+                                value={username}
                                 onChange={({ target }) =>
                                     setUsername(target.value)
                                 }
+                                size="small"
+                                margin="dense"
+                                /* required */
                             />
                         </span>
                     </div>
                     <div>
                         <span>
-                            password
-                            <input
+                            <TextField
                                 type="password"
                                 value={password}
-                                name="Password"
+                                // name="Password"
                                 id="input-password"
                                 onChange={({ target }) =>
                                     setPassword(target.value)
                                 }
+                                label="password"
+                                size="small"
+                                margin="dense"
+                                /* required */
                             />
                         </span>
                     </div>
-                    <button id="login-button" type="submit">
+                    <Button
+                        variant="contained"
+                        id="login-button"
+                        type="submit"
+                        size="small"
+                    >
                         login
-                    </button>
+                    </Button>
                 </form>
             </div>
         )
     }
 
     return (
-        <div>
+        <div id="home-style">
             <AppBar position="static">
                 <Toolbar
                     variant="dense"

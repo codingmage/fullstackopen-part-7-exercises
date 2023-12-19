@@ -1,3 +1,12 @@
+body {
+    margin: 0;
+    padding: 0;
+}
+
+* {
+    box-sizing: border-box;
+}
+
 .blogStyle {
     padding-top: 10px;
     padding-left: 2px;
@@ -35,6 +44,34 @@
     gap: 1rem;
 }
 
+#login-container{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100vw;
+}
+
+#login-style {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+#login-style h2 {
+    margin: 0;
+}
+
+#home-style {
+    margin: 0.5rem;
+}
+
+#new-blog-form {
+    display: flex;
+    flex-direction: column;
+}
+
 a {
     text-decoration: none;
     color: inherit;
@@ -43,4 +80,8 @@ a {
 
 a:hover {
     color:blue
+}
+
+h1 {
+    margin-bottom: 0.5rem;
 }

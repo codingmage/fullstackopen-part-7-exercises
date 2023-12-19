@@ -1,3 +1,4 @@
+import { Button, TextField } from "@mui/material"
 import { useState } from "react"
 
 const BlogForm = ({ createBlog }) => {
@@ -24,39 +25,55 @@ const BlogForm = ({ createBlog }) => {
             <h2>Add a new blog</h2>
 
             <form onSubmit={addBlog}>
-                <p>
-                    title:{" "}
-                    <input
+                <div>
+                    <TextField
                         id="blog-title"
-                        type="text"
-                        name="Title"
+                        /* type="text" */
+                        /* name="Title" */
                         value={blogName}
                         onChange={({ target }) => setBlogName(target.value)}
+                        size="small"
+                        label="Title"
+                        variant="standard"
+                        margin="dense"
                     />
-                </p>
-                <p>
-                    author:{" "}
-                    <input
+                </div>
+                <div>
+                    <TextField
                         id="blog-author"
-                        type="text"
-                        name="Author"
+                        /* type="text" */
+                        /* name="Author" */
                         value={blogAuthor}
                         onChange={({ target }) => setBlogAuthor(target.value)}
+                        size="small"
+                        label="Author"
+                        variant="standard"
+                        margin="dense"
                     />
-                </p>
-                <p>
-                    url:{" "}
-                    <input
+                </div>
+
+                <div>
+                    <TextField
                         id="blog-url"
-                        type="text"
-                        name="URL"
+                        /* type="text" */
+                        /* name="URL" */
                         value={blogURL}
                         onChange={({ target }) => setBlogURL(target.value)}
+                        size="small"
+                        label="URL"
+                        variant="standard"
+                        margin="dense"
                     />
-                </p>
-                <button id="submit-button" type="submit">
+                </div>
+
+                <Button
+                    size="small"
+                    variant="outlined"
+                    id="submit-button"
+                    type="submit"
+                >
                     Add
-                </button>
+                </Button>
             </form>
         </div>
     )

@@ -20,8 +20,8 @@ const FullBlog = ({ blog }) => {
     const sameUser = loggedInUser.username === blog.user.username
 
     const handleDelete = async () => {
-        if (confirm(`Delete ${blog.name} ?`) === true) {
-            dispatch(deleteBlog(blog.id))
+        if (confirm(`Delete ${blog.title} ?`) === true) {
+            dispatch(deleteBlog(blog.id, blog.title))
             navigate("/")
         }
     }
